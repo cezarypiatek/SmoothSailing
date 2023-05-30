@@ -1,10 +1,12 @@
 # SmoothSailing
+ [![NuGet](https://img.shields.io/nuget/vpre/SmoothSailing.svg)](https://www.nuget.org/packages/SmoothSailing/)
+ 
 A library to support Helm Chart installation in Kubernetes cluster from .NET code
 
 ![](logo_dark.png)
 
 ## How to install
-`SmoothSailing` is distribute as a nuget package [SmoothSailing](https://www.nuget.org/packages/SmartAnalyzers.SmoothSailing/)
+`SmoothSailing` is distribute as a nuget package [SmoothSailing](https://www.nuget.org/packages/SmoothSailing/)
 
 ## Sample usage
 
