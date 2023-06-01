@@ -17,7 +17,7 @@ using var release = await _chartInstaller.Install
     chart: new ChartFromLocalPath("./charts/mysamplechart"),
     releaseName: "samplerelease",
     overrides: new {
-    sample_property = "sample_value"
+        sample_property = "sample_value"
     },
     timeout: TimeSpan.FromMinutes(2)
 );
