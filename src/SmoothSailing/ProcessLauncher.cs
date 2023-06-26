@@ -13,9 +13,10 @@ namespace SmoothSailing
     {
         private readonly IProcessOutputWriter _processOutputWriter;
 
+        public static IProcessOutputWriter DefaultOutputWriter { get; set; } = new ConsoleProcessOutputWriter();
         public ProcessLauncher(IProcessOutputWriter? processOutputWriter = null)
         {
-            _processOutputWriter = processOutputWriter ?? new ConsoleProcessOutputWriter();
+            _processOutputWriter = processOutputWriter ?? DefaultOutputWriter;
         }
 
         public async IAsyncEnumerable<string> Execute(string command, string parameters, [EnumeratorCancellation] CancellationToken token)
