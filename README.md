@@ -11,8 +11,8 @@ A library to support Helm Chart installation in Kubernetes cluster from .NET cod
 ## Sample usage
 
 ```cs
-using var chartInstaller = new ChartInstaller(new ProcessLauncher());
-using var release = await _chartInstaller.Install
+var chartInstaller = new ChartInstaller(new ProcessLauncher());
+await using var release = await chartInstaller.Install
 (
     chart: new ChartFromLocalPath("./charts/mysamplechart"),
     releaseName: "samplerelease",
@@ -39,3 +39,31 @@ using var release = await _chartInstaller.Install
 3. Make sure that all `yaml` files are encoded as `UTF-8` not `UTF-8-BOOM`
 
 
+
+## SmoothSailing.MsSql
+
+Setup MsSql for tests.
+
+Built on top of helm chart provided by https://github.com/microsoft/mssql-docker/tree/master/linux/sample-helm-chart
+
+```cs
+[Test]
+public async Task install_mssql()
+{
+    var chartInstaller = new ChartInstaller(new ProcessLauncher());
+    await using var release = await chartInstaller.Install
+    (
+        chart: new ChartFromLocalPath("./charts/mssql"),
+        releaseName: "samplerelease",
+        overrides: new MsSqlConfiguration
+        {
+            ServicePort = 1433,
+            SaPassword = "StrongPass1!"
+        },
+        timeout: TimeSpan.FromMinutes(2)
+    );
+
+    var localPort= await release.StartPortForwardForService("samplerelease-mssql-latest", servicePort: 1433);
+    Console.WriteLine($"SqlServer available at {localPort}");
+}
+```

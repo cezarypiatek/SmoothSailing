@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SmoothSailing.MsSql\SmoothSailing.MsSql.csproj" />
     <ProjectReference Include="..\SmoothSailing\SmoothSailing.csproj" />
   </ItemGroup>
 
