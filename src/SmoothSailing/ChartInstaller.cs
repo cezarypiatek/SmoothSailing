@@ -26,7 +26,7 @@ public class ChartInstaller
     /// <param name="releaseName"></param>
     /// <param name="overrides"></param>
     /// <param name="timeout"></param>
-    public async Task<Release> Install(IChart chart, string releaseName, object? overrides = null, TimeSpan? timeout = null)
+    public async Task<Release> Install(IChart chart, string releaseName, object? overrides = null, TimeSpan? timeout = null, KubernetesContext? context = null)
     {
         var executeToEnd = await _processLauncher.ExecuteToEnd("helm", $"list --filter {releaseName} -o json", default);
         if (executeToEnd != "[]")
@@ -47,6 +47,11 @@ public class ChartInstaller
             parameters.Add($"--timeout {timeout.Value.TotalSeconds}s");
         }
 
+        if (context is not null)
+        {
+            ApplyContextInfo(context, parameters);
+        }
+
         chart.ApplyInstallParameters(parameters);
 
         if (overrides != null)
@@ -59,5 +64,48 @@ public class ChartInstaller
 
         await _processLauncher.ExecuteToEnd("helm", $"upgrade {releaseName} {string.Join(" ", parameters)}", default);
         return new Release(releaseName, _processLauncher);
+    }
+
+    private void ApplyContextInfo(KubernetesContext options, List<string> parameters)
+    {
+        if (options.BurstLimit.HasValue)
+            parameters.Add($"--burst-limit {options.BurstLimit.Value}");
+
+        if (options.Debug.HasValue && options.Debug.Value)
+            parameters.Add("--debug");
+
+        if (!string.IsNullOrEmpty(options.APIServer))
+            parameters.Add($"--kube-apiserver {options.APIServer}");
+
+        if (options.AsGroup is {Length: > 0})
+        {
+            foreach (string group in options.AsGroup)
+                parameters.Add($"--kube-as-group {group}");
+        }
+
+        if (!string.IsNullOrEmpty(options.AsUser))
+            parameters.Add($"--kube-as-user {options.AsUser}");
+
+        if (!string.IsNullOrEmpty(options.CAFile))
+            parameters.Add($"--kube-ca-file {options.CAFile}");
+
+        if (!string.IsNullOrEmpty(options.Context))
+            parameters.Add($"--kube-context {options.Context}");
+
+        if (options.InsecureSkipTLSVerify.HasValue && options.InsecureSkipTLSVerify.Value)
+            parameters.Add("--kube-insecure-skip-tls-verify");
+
+        if (!string.IsNullOrEmpty(options.TLSServerName))
+            parameters.Add($"--kube-tls-server-name {options.TLSServerName}");
+
+        if (!string.IsNullOrEmpty(options.Token))
+            parameters.Add($"--kube-token {options.Token}");
+
+        if (!string.IsNullOrEmpty(options.KubeConfig))
+            parameters.Add($"--kubeconfig {options.KubeConfig}");
+
+        if (!string.IsNullOrEmpty(options.Namespace))
+            parameters.Add($"-n {options.Namespace}");
+
     }
 }
