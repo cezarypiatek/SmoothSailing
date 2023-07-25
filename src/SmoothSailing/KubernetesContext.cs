@@ -64,4 +64,8 @@ public class KubernetesContext
     /// </summary>
     public string? Namespace { get; set; }
 
+    public string ResolveServiceAddress(string serviceName) =>
+        string.IsNullOrWhiteSpace(serviceName)
+            ? $"{serviceName}.default.svc.cluster.local"
+            : $"{serviceName}.{Namespace}.svc.cluster.local";
 }
