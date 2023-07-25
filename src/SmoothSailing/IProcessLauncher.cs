@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace SmoothSailing;
 
-public interface IProcessLauncher
+internal interface IProcessLauncher
 {
     IAsyncEnumerable<string> Execute(string command, string parameters, CancellationToken token);
 }

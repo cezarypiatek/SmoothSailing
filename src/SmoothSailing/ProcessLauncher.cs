@@ -9,14 +9,13 @@ using CliWrap;
 
 namespace SmoothSailing
 {
-    public class ProcessLauncher : IProcessLauncher
+    internal class ProcessLauncher : IProcessLauncher
     {
         private readonly IProcessOutputWriter _processOutputWriter;
-
-        public static IProcessOutputWriter DefaultOutputWriter { get; set; } = new ConsoleProcessOutputWriter();
-        public ProcessLauncher(IProcessOutputWriter? processOutputWriter = null)
+      
+        public ProcessLauncher(IProcessOutputWriter processOutputWriter)
         {
-            _processOutputWriter = processOutputWriter ?? DefaultOutputWriter;
+            _processOutputWriter = processOutputWriter;
         }
 
         public async IAsyncEnumerable<string> Execute(string command, string parameters, [EnumeratorCancellation] CancellationToken token)

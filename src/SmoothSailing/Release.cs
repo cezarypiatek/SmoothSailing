@@ -13,7 +13,7 @@ public class Release : IAsyncDisposable
     private readonly IProcessLauncher _processExecutor;
     private readonly List<(Task, CancellationTokenSource)> _portForwards = new();
 
-    public Release(string deploymentName, IProcessLauncher processExecutor)
+    internal Release(string deploymentName, IProcessLauncher processExecutor)
     {
         DeploymentName = deploymentName;
         _processExecutor = processExecutor;

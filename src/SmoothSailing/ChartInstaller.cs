@@ -9,11 +9,13 @@ namespace SmoothSailing;
 
 public class ChartInstaller
 {
+    public static IProcessOutputWriter DefaultOutputWriter { get; set; } = new ConsoleProcessOutputWriter();
+    
     private readonly IProcessLauncher _processLauncher;
 
-    public ChartInstaller(IProcessLauncher processLauncher)
+    public ChartInstaller(IProcessOutputWriter? processOutputWriter = null)
     {
-        _processLauncher = processLauncher;
+        _processLauncher = new ProcessLauncher(processOutputWriter ?? DefaultOutputWriter);
     }
 
     /// <summary>

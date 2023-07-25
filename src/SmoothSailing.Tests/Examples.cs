@@ -7,10 +7,16 @@ namespace SmoothSailing.Tests;
 
 public class Examples
 {
+    public Examples()
+    {
+        ChartInstaller.DefaultOutputWriter = new NUnitOutputWriter();
+    }
+
     [Test]
     public async Task install_mssql()
     {
-        var chartInstaller = new ChartInstaller(new ProcessLauncher());
+        
+        var chartInstaller = new ChartInstaller();
         await using var release = await chartInstaller.Install
         (
             chart: new ChartFromLocalPath("./charts/mssql"),
@@ -26,4 +32,11 @@ public class Examples
         var localPort= await release.StartPortForwardForService("samplerelease-mssql-latest", servicePort: 1433);
         Console.WriteLine($"SqlServer available at {localPort}");
     }
+}
+
+class NUnitOutputWriter:IProcessOutputWriter
+{
+    public void Write(string text) => TestContext.Progress.WriteLine(text);
+
+    public void WriteError(string text) => TestContext.Progress.WriteLine(text);
 }

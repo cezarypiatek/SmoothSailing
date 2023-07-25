@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SmoothSailing;
 
-public static class ProcessLauncherExtensions
+internal static class ProcessLauncherExtensions
 {
     public static async Task<string> ExecuteToEnd(this IProcessLauncher @this, string command, string parameters, CancellationToken token)
     {

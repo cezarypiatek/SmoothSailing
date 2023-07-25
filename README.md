@@ -11,7 +11,7 @@ A library to support Helm Chart installation in Kubernetes cluster from .NET cod
 ## Sample usage
 
 ```cs
-var chartInstaller = new ChartInstaller(new ProcessLauncher());
+var chartInstaller = new ChartInstaller();
 await using var release = await chartInstaller.Install
 (
     chart: new ChartFromLocalPath("./charts/mysamplechart"),
@@ -50,7 +50,7 @@ Built on top of helm chart provided by https://github.com/microsoft/mssql-docker
 [Test]
 public async Task install_mssql()
 {
-    var chartInstaller = new ChartInstaller(new ProcessLauncher());
+    var chartInstaller = new ChartInstaller();
     await using var release = await chartInstaller.Install
     (
         chart: new ChartFromLocalPath("./charts/mssql"),
