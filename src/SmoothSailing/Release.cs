@@ -11,12 +11,14 @@ public class Release : IAsyncDisposable
 {
     public string DeploymentName { get; }
     private readonly IProcessLauncher _processExecutor;
+    private readonly KubernetesContext? _kubernetesContext;
     private readonly List<(Task, CancellationTokenSource)> _portForwards = new();
 
-    internal Release(string deploymentName, IProcessLauncher processExecutor)
+    internal Release(string deploymentName, IProcessLauncher processExecutor, KubernetesContext? kubernetesContext)
     {
         DeploymentName = deploymentName;
         _processExecutor = processExecutor;
+        _kubernetesContext = kubernetesContext;
     }
 
     public async Task<int> StartPortForwardForService(string serviceName, int servicePort, int? localPort = null) 
@@ -28,7 +30,9 @@ public class Release : IAsyncDisposable
     private async Task<int> StartPortForwardFor(string elementType, string elementName, int servicePort, int? localPort)
     {
         var cancellationTokenSource = new CancellationTokenSource();
-        var asyncEnumerable = _processExecutor.Execute("kubectl", $"port-forward {elementType}/{elementName} {localPort}:{servicePort}", cancellationTokenSource.Token);
+        var portForwardParameters = new HelmCommandParameterBuilder();
+        portForwardParameters.ApplyContextInfo(_kubernetesContext);
+        var asyncEnumerable = _processExecutor.Execute("kubectl", $"port-forward {elementType}/{elementName} {localPort}:{servicePort} {portForwardParameters.Build()}", cancellationTokenSource.Token);
 
         var enumerator = asyncEnumerable.GetAsyncEnumerator(default);
         await enumerator.MoveNextAsync();
@@ -77,6 +81,8 @@ public class Release : IAsyncDisposable
             Console.WriteLine(e);
         }
 
-        await _processExecutor.ExecuteToEnd("helm", $"uninstall {DeploymentName}", default);
+        var uninstallParameters = new HelmCommandParameterBuilder();
+        uninstallParameters.ApplyContextInfo(_kubernetesContext);
+        await _processExecutor.ExecuteToEnd("helm", $"uninstall {DeploymentName} {uninstallParameters.Build()}", default);
     }
 }
