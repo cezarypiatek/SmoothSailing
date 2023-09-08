@@ -30,10 +30,31 @@ public class ChartInstaller
     /// <param name="timeout"></param>
     public async Task<Release> Install(IChart chart, string releaseName, object? overrides = null, TimeSpan? timeout = null, KubernetesContext? context = null)
     {
-        var executeToEnd = await _processLauncher.ExecuteToEnd("helm", $"list --filter {releaseName} -o json", default);
+        var filterParameters = new List<string>
+        {
+            $"--filter {releaseName}",
+            "-o json"
+        };
+        
+        if (context is not null)
+        {
+            ApplyContextInfo(context, filterParameters);
+        }
+        
+        
+        var executeToEnd = await _processLauncher.ExecuteToEnd("helm", $"list {string.Join(" ", filterParameters)}", default);
         if (executeToEnd != "[]")
         {
-            await _processLauncher.ExecuteToEnd("helm", $"uninstall  {releaseName} --wait", default);
+            var uninstallParameters = new List<string>
+            {
+                "--wait"
+            };
+        
+            if (context is not null)
+            {
+                ApplyContextInfo(context, uninstallParameters);
+            }
+            await _processLauncher.ExecuteToEnd("helm", $"uninstall {releaseName} {string.Join(" ", filterParameters)}", default);
         }
 
         var parameters = new List<string>
