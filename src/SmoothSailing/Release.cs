@@ -83,6 +83,7 @@ public class Release : IAsyncDisposable
 
         var uninstallParameters = new HelmCommandParameterBuilder();
         uninstallParameters.ApplyContextInfo(_kubernetesContext);
+        uninstallParameters.Add("--wait");
         await _processExecutor.ExecuteToEnd("helm", $"uninstall {DeploymentName} {uninstallParameters.Build()}", default);
     }
 }
