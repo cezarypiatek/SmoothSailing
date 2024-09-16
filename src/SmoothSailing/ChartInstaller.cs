@@ -33,6 +33,9 @@ public class ChartInstaller
         var listCommandParameters = new HelmCommandParameterBuilder(new List<string>
         {
             $"--filter {releaseName}",
+            "--deployed",
+            "--failed",
+            "--uninstalling",
             "-o json"
         });
         
