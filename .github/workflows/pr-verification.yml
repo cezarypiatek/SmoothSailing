@@ -36,8 +36,3 @@ jobs:
         dotnet restore $env:SolutionPath
     - name: Build extension
       run: dotnet build $env:SolutionPath
-    - name: Collect artifacts - nugets
-      uses: actions/upload-artifact@v2
-      with:
-        name: SmoothSailing-Nugets
-        path: '**/SmoothSailing*.nupkg'
