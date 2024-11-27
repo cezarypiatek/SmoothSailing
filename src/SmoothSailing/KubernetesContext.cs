@@ -1,4 +1,8 @@
-﻿namespace SmoothSailing;
+﻿using System;
+using System.Diagnostics.Contracts;
+using System.Threading.Tasks;
+
+namespace SmoothSailing;
 
 public class KubernetesContext
 {
@@ -68,4 +72,14 @@ public class KubernetesContext
         string.IsNullOrWhiteSpace(serviceName)
             ? $"{serviceName}.default.svc.cluster.local"
             : $"{serviceName}.{Namespace}.svc.cluster.local";
+
+    /// <summary>
+    /// Resolve service address and ensure that DNS is available
+    /// </summary>
+    public async Task<string> ResolveWorkingServiceAddress(string serviceName, TimeSpan timeout)
+    {
+        var serviceAddress = this.ResolveServiceAddress(serviceName);
+        await DnsHelper.WaitForDnsAvailability(serviceName, timeout);
+        return serviceAddress;
+    }
 }
