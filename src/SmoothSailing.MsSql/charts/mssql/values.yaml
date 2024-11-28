@@ -25,5 +25,5 @@ containers:
 podAnnotations: {}
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
   port: 1433
