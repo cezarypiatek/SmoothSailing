@@ -6,10 +6,10 @@ namespace SmoothSailing;
 
 internal static class ProcessLauncherExtensions
 {
-    public static async Task<string> ExecuteToEnd(this IProcessLauncher @this, string command, string parameters, CancellationToken token)
+    public static async Task<string> ExecuteToEnd(this ProcessLauncher @this, string command, string parameters, bool mute, CancellationToken token)
     {
         var outputBuilder = new StringBuilder();
-        await foreach (var line in @this.Execute(command, parameters, token))
+        await foreach (var line in @this.Execute(command, parameters, mute, token))
         {
             outputBuilder.Append(line);
         }
