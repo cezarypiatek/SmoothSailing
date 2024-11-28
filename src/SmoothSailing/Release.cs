@@ -10,11 +10,11 @@ namespace SmoothSailing;
 public class Release : IAsyncDisposable
 {
     public string DeploymentName { get; }
-    private readonly IProcessLauncher _processExecutor;
+    private readonly ProcessLauncher _processExecutor;
     private readonly KubernetesContext? _kubernetesContext;
     private readonly List<(Task, CancellationTokenSource)> _portForwards = new();
 
-    internal Release(string deploymentName, IProcessLauncher processExecutor, KubernetesContext? kubernetesContext)
+    internal Release(string deploymentName, ProcessLauncher processExecutor, KubernetesContext? kubernetesContext)
     {
         DeploymentName = deploymentName;
         _processExecutor = processExecutor;
@@ -30,9 +30,9 @@ public class Release : IAsyncDisposable
     private async Task<int> StartPortForwardFor(string elementType, string elementName, int servicePort, int? localPort)
     {
         var cancellationTokenSource = new CancellationTokenSource();
-        var portForwardParameters = new HelmCommandParameterBuilder();
+        var portForwardParameters = new KubectlCommandParameterBuilder();
         portForwardParameters.ApplyContextInfo(_kubernetesContext);
-        var asyncEnumerable = _processExecutor.Execute("kubectl", $"port-forward {elementType}/{elementName} {localPort}:{servicePort} {portForwardParameters.Build()}", cancellationTokenSource.Token);
+        var asyncEnumerable = _processExecutor.Execute("kubectl", $"port-forward {elementType}/{elementName} {localPort}:{servicePort} {portForwardParameters.Build()}", mute:false,  cancellationTokenSource.Token);
 
         var enumerator = asyncEnumerable.GetAsyncEnumerator(default);
         await enumerator.MoveNextAsync();
@@ -84,6 +84,6 @@ public class Release : IAsyncDisposable
         var uninstallParameters = new HelmCommandParameterBuilder();
         uninstallParameters.ApplyContextInfo(_kubernetesContext);
         uninstallParameters.Add("--wait");
-        await _processExecutor.ExecuteToEnd("helm", $"uninstall {DeploymentName} {uninstallParameters.Build()}", default);
+        await _processExecutor.ExecuteToEnd("helm", $"uninstall {DeploymentName} {uninstallParameters.Build()}", mute: false, default);
     }
 }

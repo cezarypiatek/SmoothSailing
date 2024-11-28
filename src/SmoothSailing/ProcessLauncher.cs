@@ -9,7 +9,7 @@ using CliWrap;
 
 namespace SmoothSailing
 {
-    internal class ProcessLauncher : IProcessLauncher
+    internal class ProcessLauncher 
     {
         private readonly IProcessOutputWriter _processOutputWriter;
       
@@ -18,7 +18,7 @@ namespace SmoothSailing
             _processOutputWriter = processOutputWriter;
         }
 
-        public async IAsyncEnumerable<string> Execute(string command, string parameters, [EnumeratorCancellation] CancellationToken token)
+        public async IAsyncEnumerable<string> Execute(string command, string parameters, bool mute, [EnumeratorCancellation] CancellationToken token)
         {
             var channel = Channel.CreateUnbounded<string>();
 
@@ -34,7 +34,10 @@ namespace SmoothSailing
                         .WithStandardOutputPipe(PipeTarget.ToDelegate(async s =>
                         {
                             await writer.WriteAsync(s, default);
-                            _processOutputWriter.Write(s);
+                            if (mute == false)
+                            {
+                                _processOutputWriter.Write(s);
+                            }
                         }))
                         .WithStandardErrorPipe(PipeTarget.ToDelegate(async s =>
                         {

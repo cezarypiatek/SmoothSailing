@@ -61,3 +61,39 @@ internal class HelmCommandParameterBuilder
 
     public string Build() => string.Join(" ", _parameters);
 }
+
+
+internal class KubectlCommandParameterBuilder
+{
+    internal readonly List<string> _parameters;
+
+    public KubectlCommandParameterBuilder(IReadOnlyList<string>? parameters = null)
+    {
+        _parameters = parameters?.ToList() ?? new List<string>();
+    }
+
+    public void Add(string parameter) => _parameters.Add(parameter);
+
+    public void ApplyContextInfo(KubernetesContext? context)
+    {
+        if (context == null)
+            return;
+
+        if (!string.IsNullOrEmpty(context.APIServer))
+            _parameters.Add($"--server \"{context.APIServer}\"");
+        
+        if (!string.IsNullOrEmpty(context.Token))
+            _parameters.Add($"--token \"{context.Token}\"");
+
+        if (!string.IsNullOrEmpty(context.KubeConfig))
+            _parameters.Add($"--kubeconfig \"{context.KubeConfig}\"");
+
+        if (!string.IsNullOrEmpty(context.Namespace))
+            _parameters.Add($"--namespace \"{context.Namespace}\"");
+
+        if (context.InsecureSkipTLSVerify.HasValue && context.InsecureSkipTLSVerify.Value)
+            _parameters.Add("--insecure-skip-tls-verify");
+    }
+
+    public string Build() => string.Join(" ", _parameters);
+}
