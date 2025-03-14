@@ -17,9 +17,16 @@ public class ChartFromRepository : IChart
 
     public void ApplyInstallParameters(IList<string> parameters)
     {
-        parameters.Add($"--repo {_repository.Url}");
-        parameters.Add($"--username \"{_repository.Login}\"");
-        parameters.Add($"--password \"{_repository.Password}\"");
+        if (string.IsNullOrWhiteSpace(_repository.Url) == false)
+        {
+            parameters.Add($"--repo {_repository.Url}");
+            if (string.IsNullOrWhiteSpace(_repository.Login) == false)
+            {
+                parameters.Add($"--username \"{_repository.Login}\"");
+                parameters.Add($"--password \"{_repository.Password}\"");
+            }
+        }
+        
         if (_version != null)
         {
             parameters.Add($"--version {_version}");
