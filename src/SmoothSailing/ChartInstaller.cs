@@ -116,7 +116,24 @@ public class ChartInstaller
             installParameters.Add($"-f \"{overridesPath}\"");    
         }
 
-        await _processLauncher.ExecuteToEnd("helm", $"upgrade {releaseName} {installParameters.Build()}", mute: false, default);
-        return new Release(releaseName, _processLauncher, context);
+        async Task<Release> PerformInstall()
+        {
+            await _processLauncher.ExecuteToEnd("helm", $"upgrade {releaseName} {installParameters.Build()}", mute: false, default);
+            return new Release(releaseName, _processLauncher, context);
+        }
+
+        try
+        {
+            return await PerformInstall();
+        }
+        catch (InvalidOperationException e)
+        {
+            if(e.Message.Contains("try 'helm repo update'"))
+            {
+                await _processLauncher.ExecuteToEnd("helm", "repo update", mute: false, default);
+                return await PerformInstall();
+            }
+            throw;
+        }
     }
 }
