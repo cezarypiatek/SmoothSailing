@@ -158,7 +158,7 @@ public class ChartInstaller
             var eventResponse = JsonConvert.DeserializeObject<GetEventsResponse>(getEventsResults)!;
             var events = eventResponse.Items
                 .Where(e => e.InvolvedObject?.Name.StartsWith(releaseName, StringComparison.OrdinalIgnoreCase) == true)
-                .Where(e => e.LastTimestamp > startTime).ToList();
+                .Where(e => e.GetActualTimestamp() > startTime).ToList();
             if (events.Any())
             {
                 _processOutputWriter.Write("Events from the installation:");
@@ -186,7 +186,15 @@ class KubernetesEvent
 {
     public string Message { get; set; } = null!;
     public string Reason { get; set; } = null!;
-    public DateTime LastTimestamp { get; set; }
+    public DateTime? LastTimestamp { get; set; }
+    public DateTime? FirstTimestamp { get; set; }
+    public DateTime? EventTimestamp { get; set; }
+    
+    public DateTime? GetActualTimestamp()
+    {
+        return EventTimestamp ?? LastTimestamp ?? FirstTimestamp;
+    }
+    
     public KubernetesEventInvolvedObject? InvolvedObject { get; set; }
 }
 
