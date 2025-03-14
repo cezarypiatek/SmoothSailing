@@ -68,10 +68,11 @@ public class KubernetesContext
     /// </summary>
     public string? Namespace { get; set; }
 
-    public string ResolveServiceAddress(string serviceName) =>
-        string.IsNullOrWhiteSpace(serviceName)
-            ? $"{serviceName}.default.svc.cluster.local"
-            : $"{serviceName}.{Namespace}.svc.cluster.local";
+    public string ResolveServiceAddress(string serviceName)
+    {
+        var ns = string.IsNullOrWhiteSpace(serviceName) ? "default" : Namespace;
+        return $"{serviceName}.{ns}.svc.cluster.local";
+    }
 
     /// <summary>
     /// Resolve service address and ensure that DNS is available
