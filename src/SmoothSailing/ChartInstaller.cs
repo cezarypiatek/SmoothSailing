@@ -118,8 +118,16 @@ public class ChartInstaller
 
         async Task<Release> PerformInstall()
         {
-            await _processLauncher.ExecuteToEnd("helm", $"upgrade {releaseName} {installParameters.Build()}", mute: false, default);
-            return new Release(releaseName, _processLauncher, context);
+            var startTime = DateTime.UtcNow;
+            try
+            {
+                await _processLauncher.ExecuteToEnd("helm", $"upgrade {releaseName} {installParameters.Build()}", mute: false, default);
+                return new Release(releaseName, _processLauncher, context);
+            }
+            finally
+            {
+                await TryToDumpEvents(context, releaseName, startTime);
+            }
         }
 
         try
@@ -136,4 +144,53 @@ public class ChartInstaller
             throw;
         }
     }
+
+    private async Task TryToDumpEvents(KubernetesContext? context, string releaseName, DateTime startTime)
+    {
+        var getSecretsParameters = new KubectlCommandParameterBuilder(new List<string>()
+        {
+            "-o json"
+        });
+        getSecretsParameters.ApplyContextInfo(context);
+        var getEventsResults = await _processLauncher.ExecuteToEnd("kubectl", $"get events {getSecretsParameters.Build()}", mute: true,default);
+        try
+        {
+            var eventResponse = JsonConvert.DeserializeObject<GetEventsResponse>(getEventsResults)!;
+            var events = eventResponse.Items
+                .Where(e => e.InvolvedObject?.Name.StartsWith(releaseName, StringComparison.OrdinalIgnoreCase) == true)
+                .Where(e => e.LastTimestamp > startTime).ToList();
+            if (events.Any())
+            {
+                _processOutputWriter.Write("Events from the installation:");
+                foreach (var e in events)
+                {
+                    _processOutputWriter.Write($"{e.LastTimestamp:yyyy-MM-dd HH:mm:ss} {e.Reason}: {e.Message}");
+                }
+            }
+                    
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+}
+
+
+class GetEventsResponse
+{
+    public List<KubernetesEvent> Items { get; set; } = new();
+}
+
+class KubernetesEvent
+{
+    public string Message { get; set; } = null!;
+    public string Reason { get; set; } = null!;
+    public DateTime LastTimestamp { get; set; }
+    public KubernetesEventInvolvedObject? InvolvedObject { get; set; }
+}
+
+class KubernetesEventInvolvedObject
+{
+    public string Name { get; set; } = null!;
 }
