@@ -13,6 +13,21 @@ public class Examples
     }
 
     [Test]
+    public async Task Download_chart()
+    {
+        //INFO: Register the repository locally first
+        // > helm repo add bitnami https://charts.bitnami.com/bitnami
+        var chart = await CachedChartFromRepository.CreateAsync(new HelmRepository("https://charts.bitnami.com/bitnami", useLocallyRegistered: true), "nginx", "19.0.2");
+        
+        var chartInstaller = new ChartInstaller();
+        await using var release = await chartInstaller.Install
+        (
+            chart: chart,
+            releaseName: "samplenginx"
+        );
+    }
+
+    [Test]
     public async Task install_mssql()
     {
         
