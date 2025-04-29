@@ -73,7 +73,7 @@ public class CachedChartFromRepository : IChart
                 var expectedRepo = repoList.FirstOrDefault(r => r.Url == repository.Url);
                 if (expectedRepo == null)
                 {
-                    throw new InvalidOperationException($"Provided helm repository is registered in the helm client. Execute 'helm repo add {repository.Url}' to register it.");
+                    throw new InvalidOperationException($"Provided helm repository is not registered in the helm client. Execute 'helm repo add {repository.Url}' to register it.");
                 }
                 parameters.Add($"--version {version}");
                 parameters.Add($"{expectedRepo.Name}/{chartName}");
