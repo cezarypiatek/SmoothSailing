@@ -70,7 +70,7 @@ public class KubernetesContext
 
     public string ResolveServiceAddress(string serviceName)
     {
-        var ns = string.IsNullOrWhiteSpace(serviceName) ? "default" : Namespace;
+        var ns = string.IsNullOrWhiteSpace(Namespace) ? "default" : Namespace;
         return $"{serviceName}.{ns}.svc.cluster.local";
     }
 
@@ -80,7 +80,7 @@ public class KubernetesContext
     public async Task<string> ResolveWorkingServiceAddress(string serviceName, TimeSpan timeout)
     {
         var serviceAddress = this.ResolveServiceAddress(serviceName);
-        await DnsHelper.WaitForDnsAvailability(serviceName, timeout);
+        await DnsHelper.WaitForDnsAvailability(serviceAddress, timeout);
         return serviceAddress;
     }
 }
