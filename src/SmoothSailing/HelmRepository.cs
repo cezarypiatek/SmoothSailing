@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -13,6 +15,10 @@ public class HelmRepository
     public string? Password { get; }
     public bool UseLocallyRegistered { get; }
 
+    private readonly SemaphoreSlim _repoUpdateSemaphore = new SemaphoreSlim(1, 1);
+    private readonly ConcurrentDictionary<string, string> _versionCache = new();
+    private bool _repoUpdated = false;
+
     public HelmRepository(string url, string? login = null, string? password = null, bool useLocallyRegistered = false)
     {
         Url = url;
@@ -23,6 +29,9 @@ public class HelmRepository
 
     public async Task<string> ResolveLatestVersion(string chartName)
     {
+        if (_versionCache.TryGetValue(chartName, out var cached))
+            return cached;
+
         var processLauncher = new ProcessLauncher(ChartInstaller.DefaultOutputWriter);
         var parameters = new HelmCommandParameterBuilder();
 
@@ -42,6 +51,20 @@ public class HelmRepository
             }
 
             parameters.Add($"{expectedRepo.Name}/{chartName}");
+
+            await _repoUpdateSemaphore.WaitAsync();
+            try
+            {
+                if (!_repoUpdated)
+                {
+                    _ = await processLauncher.ExecuteToEnd("helm", "repo update", mute: false, default);
+                    _repoUpdated = true;
+                }
+            }
+            finally
+            {
+                _repoUpdateSemaphore.Release();
+            }
         }
         else
         {
@@ -53,8 +76,6 @@ public class HelmRepository
                 parameters.Add($"--password \"{this.Password}\"");
             }
         }
-        
-        _ = await processLauncher.ExecuteToEnd("helm", "repo update", mute: false, default);
 
         var result = await processLauncher.ExecuteToEnd("helm", $"show chart {parameters.Build()}", mute: true, token: default, preserveLineEnding: true);
         foreach (var line in result.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
@@ -64,7 +85,9 @@ public class HelmRepository
             {
                 if (string.Equals(parts[0].Trim(), "version", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return parts[1].Trim();
+                    var version = parts[1].Trim();
+                    _versionCache.TryAdd(chartName, version);
+                    return version;
                 }
             }
         }
