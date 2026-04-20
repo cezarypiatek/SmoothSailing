@@ -1,5 +1,6 @@
 # SmoothSailing
  [![NuGet](https://img.shields.io/nuget/vpre/SmoothSailing.svg)](https://www.nuget.org/packages/SmoothSailing/)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcezarypiatek%2FSmoothSailing.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcezarypiatek%2FSmoothSailing?ref=badge_shield)
  
 A library to support Helm Chart installation in Kubernetes cluster from .NET code
 
@@ -67,3 +68,6 @@ public async Task install_mssql()
     Console.WriteLine($"SqlServer available at {localPort}");
 }
 ```
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcezarypiatek%2FSmoothSailing.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcezarypiatek%2FSmoothSailing?ref=badge_large)
