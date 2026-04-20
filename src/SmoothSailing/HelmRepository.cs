@@ -56,7 +56,7 @@ public class HelmRepository
         
         _ = await processLauncher.ExecuteToEnd("helm", "repo update", mute: false, default);
 
-        var result = await processLauncher.ExecuteToEnd("helm", $"show chart {parameters.Build()}", mute: true, token: default);
+        var result = await processLauncher.ExecuteToEnd("helm", $"show chart {parameters.Build()}", mute: true, token: default, preserveLineEnding: true);
         foreach (var line in result.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
         {
             var parts = line.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
