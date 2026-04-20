@@ -91,10 +91,10 @@ public class CachedChartFromRepository : IChart
         parameters.Add(chartName);
         return parameters;
     }
+}
 
-    class RepoListItem
-    {
-        public string Name { get; set; } = null!;
-        public string Url { get; set; }= null!;
-    }
+internal class RepoListItem
+{
+    public string Name { get; set; } = null!;
+    public string Url { get; set; }= null!;
 }
