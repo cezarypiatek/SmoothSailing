@@ -119,14 +119,38 @@ public class ChartInstaller
         async Task<Release> PerformInstall()
         {
             var startTime = DateTime.UtcNow;
+            using var collectorCts = new System.Threading.CancellationTokenSource();
+            var collector = new PodLogCollector(_processLauncher, _processOutputWriter, context, releaseName, startTime);
+            var collectorTask = collector.StartAsync(collectorCts.Token);
+            var installFailed = false;
             try
             {
                 await _processLauncher.ExecuteToEnd("helm", $"upgrade {releaseName} {installParameters.Build()}", mute: false, default);
                 return new Release(releaseName, _processLauncher, context);
             }
+            catch
+            {
+                installFailed = true;
+                throw;
+            }
             finally
             {
+                collectorCts.Cancel();
+                try
+                {
+                    await collectorTask;
+                }
+                catch
+                {
+                    // Collector swallows its own errors; guard regardless.
+                }
+
                 await TryToDumpEvents(context, releaseName, startTime);
+                
+                if (installFailed)
+                {
+                    collector.Flush(_processOutputWriter);
+                }
             }
         }
 
