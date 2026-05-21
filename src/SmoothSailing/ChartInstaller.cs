@@ -66,7 +66,6 @@ public class ChartInstaller
             {
                 var getSecretsParameters = new KubectlCommandParameterBuilder(new List<string>()
                 {
-                    "-A",
                     "-o json"
                 });
                 getSecretsParameters.ApplyContextInfo(context);
@@ -185,7 +184,7 @@ public class ChartInstaller
                 .Where(e => e.GetActualTimestamp() > startTime).ToList();
             if (events.Any())
             {
-                _processOutputWriter.Write("Events from the installation:");
+                _processOutputWriter.Write($"Events from the installation for {releaseName}:");
                 foreach (var e in events)
                 {
                     _processOutputWriter.Write($"{e.LastTimestamp:yyyy-MM-dd HH:mm:ss} {e.Reason}: {e.Message}");
