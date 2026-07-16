@@ -34,6 +34,24 @@ public class ChartInstaller
     /// <param name="timeout"></param>
     public async Task<Release> Install(IChart chart, string releaseName, object? overrides = null, TimeSpan? timeout = null, KubernetesContext? context = null)
     {
+        List<FileInfo>? valuesFiles = null;
+
+        if (overrides != null)
+        {
+            valuesFiles = new List<FileInfo>();
+            
+            var serializedOverrides = JsonConvert.SerializeObject(overrides);
+            var overridesPath = Path.Combine(Path.GetTempPath(), $"{releaseName}.json");
+
+            File.WriteAllText(overridesPath, serializedOverrides, Encoding.UTF8);
+            valuesFiles.Add(new FileInfo(overridesPath));
+        }
+
+        return await Install(chart, releaseName, valuesFiles, timeout, context);
+    }
+
+    public async Task<Release> Install(IChart chart, string releaseName, IEnumerable<FileInfo>? valuesFiles, TimeSpan? timeout = null, KubernetesContext? context = null)
+    {
         var listCommandParameters = new HelmCommandParameterBuilder(new List<string>
         {
             $"--filter {releaseName}",
@@ -107,12 +125,12 @@ public class ChartInstaller
 
         chart.ApplyInstallParameters(installParameters._parameters);
 
-        if (overrides != null)
+        if (valuesFiles?.Any() == true)
         {
-            var serializedOverrides = JsonConvert.SerializeObject(overrides);
-            var overridesPath = Path.Combine(Path.GetTempPath(), $"{releaseName}.json");
-            File.WriteAllText(overridesPath, serializedOverrides, Encoding.UTF8);
-            installParameters.Add($"-f \"{overridesPath}\"");    
+            foreach (var valuesFile in valuesFiles)
+            {
+                installParameters.Add($"-f \"{valuesFile.FullName}\"");
+            }
         }
 
         async Task<Release> PerformInstall()
